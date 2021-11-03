@@ -1,0 +1,14 @@
+# *****************
+# * EXTRA OPTIONS *
+# *****************
+
+setTimeToZero: true
+
+# Set to true to enforce a world border before the game starts (useful to keep players from running too far).
+preGameWorldBorder: false
+# This will set the size of the pre-game border. Recommended to leave at 100.
+preGameBorderSize: 70
+
+
+# Please do not touch the value below!
+uuid: ""
