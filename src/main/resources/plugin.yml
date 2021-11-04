@@ -32,6 +32,6 @@ commands:
     usage: /top
     permission: battledome.top
   tp:
-    description: Teleports player to target
+    description: Teleports player to target if target is teammate
     usage: /tp <target>
-    permission: battledome.top
+    permission: battledome.tp

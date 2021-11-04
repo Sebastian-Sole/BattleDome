@@ -188,8 +188,13 @@ public class PluginCommands implements CommandExecutor {
                 return false;
             }
             if (commandSender instanceof Player sender){
-                //todo; only teleport to teammates.
-                sender.teleport(Bukkit.getPlayer(args[0]));
+                Player targetPlayer = Bukkit.getPlayer(args[0]);
+                if ((main.getBlueTeam().contains(sender) && main.getBlueTeam().contains(targetPlayer))
+                        || main.getRedTeam().contains(sender) && main.getRedTeam().contains(targetPlayer)) {
+                    sender.teleport(targetPlayer);
+                }
+                else
+                    return false;
             }
         }
         return false;
