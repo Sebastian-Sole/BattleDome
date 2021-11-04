@@ -188,8 +188,13 @@ public class PluginCommands implements CommandExecutor {
                 return false;
             }
             if (commandSender instanceof Player sender){
-                //todo; only teleport to teammates.
-                sender.teleport(Bukkit.getPlayer(args[0]));
+                Player targetPlayer = Bukkit.getPlayer(args[0]);
+                if ((main.getBlueTeam().contains(sender) && main.getBlueTeam().contains(targetPlayer))
+                        || main.getRedTeam().contains(sender) && main.getRedTeam().contains(targetPlayer)) {
+                    sender.teleport(targetPlayer);
+                }
+                else
+                    return false;
             }
         }
         return false;
@@ -205,28 +210,20 @@ public class PluginCommands implements CommandExecutor {
         this.updatedY = cornerY;
         for (int i=0; i<19; i++){
             for (int j=0; j<19; j++){
+                //todo; Clean up code
                 Block block1 = main.getWorld().getBlockAt(cornerX-i,updatedY,cornerZ-j);
                 if ((!block1.getType().isSolid())){ // If block is not solid, e.g., if block is air
-                    main.getLogger().info("------------");
-                    main.getLogger().info("Block at: " + (cornerX-i) + ", " + (updatedY) + ", " + (cornerZ-j) + "is not Solid");
-                    main.getLogger().info("Block Y: " + block1.getY() +". Updated Y: " + updatedY);
                     boolean bool = true;
                     while (bool){
                         block1 = main.getWorld().getBlockAt(cornerX - i, updatedY - 1, cornerZ - j);
                         updatedY--;
-                        main.getLogger().info("------- UPDATING BLOCK -------");
-                        main.getLogger().info("Block now at: " + block1.getX() + ", " + block1.getY() + ", " + block1.getZ());
-                        main.getLogger().info("Updated Y: " + updatedY);
-                        main.getLogger().info("---------------");
                         if (block1.getType().isSolid() && (!block1.getType().isAir())) { // Continue while loop until block is solid
-                            main.getLogger().info("BLOCK IS NOW SOLID");
                             bool = false;
                         }
                     }
                 }
                 else if (main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ-j).getType().isSolid()){// If block above is solid
-                    Block blockAbove = main.getWorld().getBlockAt(
-                            new Location(main.getWorld(), block1.getX(), block1.getY() + 1, block1.getZ()));
+                    Block blockAbove = main.getWorld().getBlockAt(cornerX -i, updatedY +1, cornerZ-j);
                     if(isTreeElement(block1) || isTreeElement(blockAbove)){ // Check if block is a tree element
                         boolean bool = true;
                         while(bool){ // Push down until it's a grass block
@@ -238,11 +235,12 @@ public class PluginCommands implements CommandExecutor {
                         }
                     }
                     else { // If block isn't a tree element
-                        while (true) {  //  Push up until top block
+                        boolean bool = true;
+                        while (bool) {  //  Push up until top block
                             block1 = main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ - j);
                             updatedY++;
                             if (!blockAbove.getType().isSolid() || blockAbove.getType().isBlock()) // Continue while loop until block above is not solid
-                                break;
+                                bool = false;
                         }
                     }
                 }
@@ -265,10 +263,7 @@ public class PluginCommands implements CommandExecutor {
                 else if (i < 9)
                     block1.setType(Material.RED_WOOL);
                 else block1.setType(Material.BLUE_WOOL);
-                main.getLogger().info("Block now set at: " + block1.getX() + ", " + block1.getY() + ", " + block1.getZ());
                 updatedY = block1.getY();
-                main.getLogger().info("Updated Y after place: " + updatedY);
-                main.getLogger().info("-------END OF PLACE-------");
             }
         }
 
@@ -290,12 +285,12 @@ public class PluginCommands implements CommandExecutor {
 
 
     public boolean isWood(Block block){
-        return block.getType().equals(Material.ACACIA_WOOD)
-                || block.getType().equals(Material.BIRCH_WOOD)
-                || block.getType().equals(Material.DARK_OAK_WOOD)
-                || block.getType().equals(Material.JUNGLE_WOOD)
-                || block.getType().equals(Material.OAK_WOOD)
-                || block.getType().equals(Material.SPRUCE_WOOD);
+        return block.getType().equals(Material.ACACIA_LOG)
+                || block.getType().equals(Material.BIRCH_LOG)
+                || block.getType().equals(Material.DARK_OAK_LOG)
+                || block.getType().equals(Material.JUNGLE_LOG)
+                || block.getType().equals(Material.OAK_LOG)
+                || block.getType().equals(Material.SPRUCE_LOG);
     }
 
     public boolean isTreeElement(Block block){
