@@ -30,6 +30,7 @@ public class PluginCommands implements CommandExecutor {
     private final PluginMain main;
     private Block centerBlock;
     private int updatedY;
+    private final int spawnDiameter = 101;
 
 
     public PluginCommands(PluginMain main){
@@ -208,61 +209,25 @@ public class PluginCommands implements CommandExecutor {
         var cornerY = (int) corner.getY();
         var cornerZ = (int) corner.getZ();
         this.updatedY = cornerY;
-        for (int i=0; i<19; i++){
-            for (int j=0; j<19; j++){
-                //todo; Clean up code
+        for (int i = 0; i<this.spawnDiameter; i++){
+            for (int j = 0; j<this.spawnDiameter; j++){
                 Block block1 = main.getWorld().getBlockAt(cornerX-i,updatedY,cornerZ-j);
                 if ((!block1.getType().isSolid())){ // If block is not solid, e.g., if block is air
-                    boolean bool = true;
-                    while (bool){
-                        block1 = main.getWorld().getBlockAt(cornerX - i, updatedY - 1, cornerZ - j);
-                        updatedY--;
-                        if (block1.getType().isSolid() && (!block1.getType().isAir())) { // Continue while loop until block is solid
-                            bool = false;
-                        }
-                    }
+                    block1 = turnBlockSolid(cornerX, cornerZ, i, j, block1);
                 }
                 else if (main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ-j).getType().isSolid()){// If block above is solid
                     Block blockAbove = main.getWorld().getBlockAt(cornerX -i, updatedY +1, cornerZ-j);
                     if(isTreeElement(block1) || isTreeElement(blockAbove)){ // Check if block is a tree element
-                        boolean bool = true;
-                        while(bool){ // Push down until it's a grass block
-                            block1 = main.getWorld().getBlockAt(cornerX-i, updatedY-1, cornerZ-j );
-                            updatedY--;
-                            if ((!isTreeElement(block1)) && (!block1.getType().isAir()) && (block1.getType().isSolid())){
-                                bool = false;
-                            }
-                        }
+                        block1 = handleTreeBlock(cornerX, cornerZ, i, j, block1);
                     }
                     else { // If block isn't a tree element
-                        boolean bool = true;
-                        while (bool) {  //  Push up until top block
-                            block1 = main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ - j);
-                            updatedY++;
-                            if (!blockAbove.getType().isSolid() || blockAbove.getType().isBlock()) // Continue while loop until block above is not solid
-                                bool = false;
-                        }
+                        block1 = pushBlockToTop(cornerX, cornerZ, i, j, block1, blockAbove);
                     }
                 }
                 else if(isTreeElement(block1)){ // If block is a tree element
-                    boolean bool = true;
-                    while(bool){ // Push down until not a tree element
-                        block1 = main.getWorld().getBlockAt(cornerX -i,  updatedY - 1,  cornerZ-j);
-                        updatedY--;
-                        if ((!isTreeElement(block1)) && (!block1.getType().isAir()) && (block1.getType().isSolid()) ){
-                            bool=false;
-                        }
-                    }
+                    block1 = handleTreeBlock(cornerX, cornerZ, i, j, block1);
                 }
-                if(i == 9 && j == 9){
-                    this.centerBlock = block1;
-                }
-                if (i == 9){
-                    block1.setType(Material.BEDROCK);
-                }
-                else if (i < 9)
-                    block1.setType(Material.RED_WOOL);
-                else block1.setType(Material.BLUE_WOOL);
+                changeBlock(i, j, block1);
                 updatedY = block1.getY();
             }
         }
@@ -271,6 +236,57 @@ public class PluginCommands implements CommandExecutor {
         main.setCenterBlock(enchantTable);
         enchantTable.setType(Material.ENCHANTING_TABLE);
         Bukkit.broadcastMessage("Spawn created at: " + cornerX + ", " + cornerY + ", " + cornerZ);
+    }
+
+    private Block pushBlockToTop(int cornerX, int cornerZ, int i, int j, Block block1, Block blockAbove) {
+        boolean bool = true;
+        while (bool) {  //  Push up until top block
+            block1 = main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ - j);
+            updatedY++;
+            if (!blockAbove.getType().isSolid() || blockAbove.getType().isBlock()) // Continue while loop until block above is not solid
+                bool = false;
+        }
+        return block1;
+    }
+
+    private Block turnBlockSolid(int cornerX, int cornerZ, int i, int j, Block block1) {
+        boolean bool = true;
+        while (bool){
+            block1 = main.getWorld().getBlockAt(cornerX - i, updatedY - 1, cornerZ - j);
+            updatedY--;
+            if (block1.getType().isSolid() && (!block1.getType().isAir())) { // Continue while loop until block is solid
+                bool = false;
+            }
+        }
+        return block1;
+    }
+
+    private void changeBlock(int i, int j, Block block1) {
+        if(i == diameterFloor() && j == diameterFloor()){
+            this.centerBlock = block1;
+        }
+        if (i == diameterFloor()){
+            block1.setType(Material.BEDROCK);
+        }
+        else if (i < diameterFloor())
+            block1.setType(Material.RED_WOOL);
+        else block1.setType(Material.BLUE_WOOL);
+    }
+
+    private int diameterFloor(){
+        return this.spawnDiameter / 2;
+    }
+
+    private Block handleTreeBlock(int cornerX, int cornerZ, int i, int j, Block block1) {
+        boolean bool = true;
+        while(bool){ // Push down until it's a grass block
+            block1 = main.getWorld().getBlockAt(cornerX-i, updatedY-1, cornerZ-j );
+            updatedY--;
+            if ((!isTreeElement(block1)) && (!block1.getType().isAir()) && (block1.getType().isSolid())){
+                bool = false;
+            }
+        }
+        return block1;
     }
 
 
