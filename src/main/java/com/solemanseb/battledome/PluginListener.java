@@ -48,7 +48,7 @@ public class PluginListener implements Listener {
         wb.setDamageAmount(0);
         wb.setWarningDistance(0);
         wb.setCenter(joinLoc);
-        wb.setSize(main.getConfig().getInt("preGameBorderSize", 100));
+        wb.setSize(main.getConfig().getInt("preGameBorderSize", 300));
 
         main.commands.worldBorderModified = true;
 

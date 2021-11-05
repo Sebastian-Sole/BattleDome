@@ -29,8 +29,7 @@ public class PluginCommands implements CommandExecutor {
     public boolean worldBorderModified;
     private final PluginMain main;
     private Block centerBlock;
-    private int updatedY;
-    private final int spawnDiameter = 101;
+    private final int spawnDiameter = 31;
 
 
     public PluginCommands(PluginMain main){
@@ -149,6 +148,7 @@ public class PluginCommands implements CommandExecutor {
 
             setPVPState(false);
 
+            //todo; test this
             BukkitScheduler scheduler = Bukkit.getScheduler();
             scheduler.scheduleSyncDelayedTask(main, new Runnable() {
                 public void run() {
@@ -208,27 +208,21 @@ public class PluginCommands implements CommandExecutor {
         var cornerX = (int) corner.getX();
         var cornerY = (int) corner.getY();
         var cornerZ = (int) corner.getZ();
-        this.updatedY = cornerY;
         for (int i = 0; i<this.spawnDiameter; i++){
             for (int j = 0; j<this.spawnDiameter; j++){
-                Block block1 = main.getWorld().getBlockAt(cornerX-i,updatedY,cornerZ-j);
-                if ((!block1.getType().isSolid())){ // If block is not solid, e.g., if block is air
-                    block1 = turnBlockSolid(cornerX, cornerZ, i, j, block1);
-                }
-                else if (main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ-j).getType().isSolid()){// If block above is solid
-                    Block blockAbove = main.getWorld().getBlockAt(cornerX -i, updatedY +1, cornerZ-j);
-                    if(isTreeElement(block1) || isTreeElement(blockAbove)){ // Check if block is a tree element
-                        block1 = handleTreeBlock(cornerX, cornerZ, i, j, block1);
+                Block block = main.getWorld().getBlockAt(cornerX-i,cornerY,cornerZ-j);
+                block = main.getWorld().getHighestBlockAt(block.getLocation()); // Make block the highest block at its location
+                if (isLiquid(block) || isTreeElement(block)){ // If it's a liquid block or tree block, push it down until it isn't
+                    boolean bool = true;
+                    while (bool){
+                        block = main.getWorld().getBlockAt(block.getX(), block.getY() - 1, block.getZ());
+                        // Check if block isn't tree or liquid, and is solid.
+                        if ((!isLiquid(block) && (!isTreeElement(block) && block.getType().isSolid() ))){
+                            bool = false;
+                        }
                     }
-                    else { // If block isn't a tree element
-                        block1 = pushBlockToTop(cornerX, cornerZ, i, j, block1, blockAbove);
-                    }
                 }
-                else if(isTreeElement(block1)){ // If block is a tree element
-                    block1 = handleTreeBlock(cornerX, cornerZ, i, j, block1);
-                }
-                changeBlock(i, j, block1);
-                updatedY = block1.getY();
+                changeBlock(i, j, block);
             }
         }
 
@@ -238,28 +232,6 @@ public class PluginCommands implements CommandExecutor {
         Bukkit.broadcastMessage("Spawn created at: " + cornerX + ", " + cornerY + ", " + cornerZ);
     }
 
-    private Block pushBlockToTop(int cornerX, int cornerZ, int i, int j, Block block1, Block blockAbove) {
-        boolean bool = true;
-        while (bool) {  //  Push up until top block
-            block1 = main.getWorld().getBlockAt(cornerX - i, updatedY + 1, cornerZ - j);
-            updatedY++;
-            if (!blockAbove.getType().isSolid() || blockAbove.getType().isBlock()) // Continue while loop until block above is not solid
-                bool = false;
-        }
-        return block1;
-    }
-
-    private Block turnBlockSolid(int cornerX, int cornerZ, int i, int j, Block block1) {
-        boolean bool = true;
-        while (bool){
-            block1 = main.getWorld().getBlockAt(cornerX - i, updatedY - 1, cornerZ - j);
-            updatedY--;
-            if (block1.getType().isSolid() && (!block1.getType().isAir())) { // Continue while loop until block is solid
-                bool = false;
-            }
-        }
-        return block1;
-    }
 
     private void changeBlock(int i, int j, Block block1) {
         if(i == diameterFloor() && j == diameterFloor()){
@@ -276,19 +248,6 @@ public class PluginCommands implements CommandExecutor {
     private int diameterFloor(){
         return this.spawnDiameter / 2;
     }
-
-    private Block handleTreeBlock(int cornerX, int cornerZ, int i, int j, Block block1) {
-        boolean bool = true;
-        while(bool){ // Push down until it's a grass block
-            block1 = main.getWorld().getBlockAt(cornerX-i, updatedY-1, cornerZ-j );
-            updatedY--;
-            if ((!isTreeElement(block1)) && (!block1.getType().isAir()) && (block1.getType().isSolid())){
-                bool = false;
-            }
-        }
-        return block1;
-    }
-
 
     public boolean isLeaves(Block block){
         return block.getType().equals(Material.ACACIA_LEAVES)
@@ -311,6 +270,10 @@ public class PluginCommands implements CommandExecutor {
 
     public boolean isTreeElement(Block block){
         return isWood(block) || isLeaves(block);
+    }
+
+    public boolean isLiquid(Block block){
+        return block.getType().equals(Material.WATER) || block.getType().equals(Material.LAVA);
     }
 
 
