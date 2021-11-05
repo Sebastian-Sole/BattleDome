@@ -20,7 +20,6 @@ public class PluginCommands implements CommandExecutor {
             "clearteams",
             "start",
             "end",
-            "createspawn",
             "top",
             "tp"
     };
@@ -28,8 +27,6 @@ public class PluginCommands implements CommandExecutor {
     public boolean gameIsRunning = false;
     public boolean worldBorderModified;
     private final PluginMain main;
-    private Block centerBlock;
-    private final int spawnDiameter = 31;
 
 
     public PluginCommands(PluginMain main){
@@ -44,7 +41,6 @@ public class PluginCommands implements CommandExecutor {
                 return new ArrayList<String>();
             case "/start":
             case "/end":
-            case "/createspawn":
             case "/top":
             case "/tp":
             default:
@@ -120,7 +116,7 @@ public class PluginCommands implements CommandExecutor {
             commandSender.getServer().dispatchCommand(Bukkit.getConsoleSender(), "minecraft:kill @e[type=item]");
             if (worldBorderModified){
                 WorldBorder wb = main.getWorld().getWorldBorder();
-                wb.setCenter(0.5, 0.5);
+                wb.setCenter(main.getCenterBlock().getLocation());
                 wb.setSize(400);
             }
             List<World> worlds = Bukkit.getWorlds();
@@ -149,10 +145,61 @@ public class PluginCommands implements CommandExecutor {
             setPVPState(false);
 
             //todo; test this
-            BukkitScheduler scheduler = Bukkit.getScheduler();
-            scheduler.scheduleSyncDelayedTask(main, new Runnable() {
+
+            BukkitScheduler tenMinTimer = Bukkit.getScheduler();
+            tenMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
                 public void run() {
                     setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "10 MINUTES REMAINING");
+                }
+            }, 6000L);
+
+
+            BukkitScheduler fiveMinTimer = Bukkit.getScheduler();
+            fiveMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "5 MINUTES REMAINING");
+                }
+            }, 12000L);
+
+            BukkitScheduler threeMinTimer = Bukkit.getScheduler();
+            threeMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "3 MINUTES REMAINING");
+                }
+            }, 14400L);
+
+            BukkitScheduler oneMinTimer = Bukkit.getScheduler();
+            oneMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "1 MINUTE REMAINING");
+                }
+            }, 16800L);
+
+            BukkitScheduler thirtySecondTimer = Bukkit.getScheduler();
+            thirtySecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "30 SECONDS REMAINING");
+                }
+            }, 17400L);
+
+            BukkitScheduler fifteenSecondTimer = Bukkit.getScheduler();
+            fifteenSecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "15 SECONDS REMAINING");
+                }
+            }, 17700L);
+
+            BukkitScheduler pvpScheduler = Bukkit.getScheduler();
+            pvpScheduler.scheduleSyncDelayedTask(main, new Runnable() {
+                public void run() {
+                    setPVPState(true);
+                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "PVP ENABLED! KILL EVERYONE ON THE OPPOSITE TEAM OR DESTROY THEIR OBSIDIAN TO WIN!");
                 }
             }, 18000L);
 
@@ -170,11 +217,6 @@ public class PluginCommands implements CommandExecutor {
             worldBorderModified = false;
             Bukkit.broadcastMessage("Game ended!");
             gameIsRunning = false;
-            return true;
-        }
-        else if ("createspawn".equals(label)){
-            generateSpawnCircle();
-            commandSender.sendMessage("Spawn created");
             return true;
         }
         else if ("top".equals(label)){
@@ -200,83 +242,6 @@ public class PluginCommands implements CommandExecutor {
         }
         return false;
     }
-
-
-
-    private void generateSpawnCircle(){
-        Location corner = main.getWorld().getSpawnLocation();
-        var cornerX = (int) corner.getX();
-        var cornerY = (int) corner.getY();
-        var cornerZ = (int) corner.getZ();
-        for (int i = 0; i<this.spawnDiameter; i++){
-            for (int j = 0; j<this.spawnDiameter; j++){
-                Block block = main.getWorld().getBlockAt(cornerX-i,cornerY,cornerZ-j);
-                block = main.getWorld().getHighestBlockAt(block.getLocation()); // Make block the highest block at its location
-                if (isLiquid(block) || isTreeElement(block)){ // If it's a liquid block or tree block, push it down until it isn't
-                    boolean bool = true;
-                    while (bool){
-                        block = main.getWorld().getBlockAt(block.getX(), block.getY() - 1, block.getZ());
-                        // Check if block isn't tree or liquid, and is solid.
-                        if ((!isLiquid(block) && (!isTreeElement(block) && block.getType().isSolid() ))){
-                            bool = false;
-                        }
-                    }
-                }
-                changeBlock(i, j, block);
-            }
-        }
-
-        Block enchantTable = main.getWorld().getBlockAt(this.centerBlock.getX(),this.centerBlock.getY()+1,this.centerBlock.getZ());
-        main.setCenterBlock(enchantTable);
-        enchantTable.setType(Material.ENCHANTING_TABLE);
-        Bukkit.broadcastMessage("Spawn created at: " + cornerX + ", " + cornerY + ", " + cornerZ);
-    }
-
-
-    private void changeBlock(int i, int j, Block block1) {
-        if(i == diameterFloor() && j == diameterFloor()){
-            this.centerBlock = block1;
-        }
-        if (i == diameterFloor()){
-            block1.setType(Material.BEDROCK);
-        }
-        else if (i < diameterFloor())
-            block1.setType(Material.RED_WOOL);
-        else block1.setType(Material.BLUE_WOOL);
-    }
-
-    private int diameterFloor(){
-        return this.spawnDiameter / 2;
-    }
-
-    public boolean isLeaves(Block block){
-        return block.getType().equals(Material.ACACIA_LEAVES)
-                || block.getType().equals(Material.BIRCH_LEAVES)
-                || block.getType().equals(Material.OAK_LEAVES)
-                || block.getType().equals(Material.DARK_OAK_LEAVES)
-                || block.getType().equals(Material.JUNGLE_LEAVES)
-                || block.getType().equals(Material.SPRUCE_LEAVES);
-    }
-
-
-    public boolean isWood(Block block){
-        return block.getType().equals(Material.ACACIA_LOG)
-                || block.getType().equals(Material.BIRCH_LOG)
-                || block.getType().equals(Material.DARK_OAK_LOG)
-                || block.getType().equals(Material.JUNGLE_LOG)
-                || block.getType().equals(Material.OAK_LOG)
-                || block.getType().equals(Material.SPRUCE_LOG);
-    }
-
-    public boolean isTreeElement(Block block){
-        return isWood(block) || isLeaves(block);
-    }
-
-    public boolean isLiquid(Block block){
-        return block.getType().equals(Material.WATER) || block.getType().equals(Material.LAVA);
-    }
-
-
 
     private void setPVPState(boolean bool) {
         Player player = Bukkit.getPlayer(main.getBlueTeam().get(0));

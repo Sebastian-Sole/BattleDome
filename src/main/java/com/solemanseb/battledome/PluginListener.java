@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.TabCompleteEvent;
@@ -17,6 +18,8 @@ import java.util.List;
 public class PluginListener implements Listener {
 
     PluginMain main;
+    private Block centerBlock;
+    private final int spawnDiameter = 31;
 
     public PluginListener(PluginMain main){
         this.main = main;
@@ -52,10 +55,8 @@ public class PluginListener implements Listener {
 
         main.commands.worldBorderModified = true;
 
-        //generateSpawnCircle();
+        generateSpawnCircle();
     }
-
-
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event){
@@ -103,6 +104,23 @@ public class PluginListener implements Listener {
 
 
     @EventHandler
+    public void onDeath(PlayerDeathEvent event){
+        if (main.getPvpState()){
+            String name = event.getEntity().getName();
+            if (main.getBlueTeam().contains(name)) {
+                main.addDeadTeam(name);
+                Bukkit.broadcastMessage(name + ChatColor.DARK_RED + ChatColor.BOLD + " is ELIMINATED!" +ChatColor.BLUE + " BLUE TEAM " + "members remaining: " + main.getBlueTeamDeathCount() );
+
+            }
+            else if (main.getRedTeam().contains(name)) {
+                main.addDeadTeam(name);
+                Bukkit.broadcastMessage(name + ChatColor.DARK_RED + ChatColor.BOLD + " is ELIMINATED!" +ChatColor.RED + " RED TEAM " + "members remaining: " + main.getRedTeamDeathCount() );
+            }
+        }
+    }
+
+
+    @EventHandler
     public void onAutocomplete(TabCompleteEvent event){
         String buffer = event.getBuffer();
         if(!buffer.startsWith("/")) return;
@@ -114,6 +132,77 @@ public class PluginListener implements Listener {
     }
 
 
+    private void generateSpawnCircle(){
+        Location corner = main.getWorld().getSpawnLocation();
+        var cornerX = (int) corner.getX();
+        var cornerY = (int) corner.getY();
+        var cornerZ = (int) corner.getZ();
+        for (int i = 0; i<this.spawnDiameter; i++){
+            for (int j = 0; j<this.spawnDiameter; j++){
+                Block block = main.getWorld().getBlockAt(cornerX+i,cornerY,cornerZ+j);
+                block = main.getWorld().getHighestBlockAt(block.getLocation()); // Make block the highest block at its location
+                if (isLiquid(block) || isTreeElement(block)){ // If it's a liquid block or tree block, push it down until it isn't
+                    boolean bool = true;
+                    while (bool){
+                        block = main.getWorld().getBlockAt(block.getX(), block.getY() - 1, block.getZ());
+                        // Check if block isn't tree or liquid, and is solid.
+                        if ((!isLiquid(block) && (!isTreeElement(block) && block.getType().isSolid() ))){
+                            bool = false;
+                        }
+                    }
+                }
+                changeBlock(i, j, block);
+            }
+        }
+
+        Block enchantTable = main.getWorld().getBlockAt(this.centerBlock.getX(),this.centerBlock.getY()+1,this.centerBlock.getZ());
+        main.setCenterBlock(enchantTable);
+        enchantTable.setType(Material.ENCHANTING_TABLE);
+    }
+
+
+    private void changeBlock(int i, int j, Block block1) {
+        if(i == diameterFloor() && j == diameterFloor()){
+            this.centerBlock = block1;
+        }
+        if (i == diameterFloor()){
+            block1.setType(Material.BEDROCK);
+        }
+        else if (i < diameterFloor())
+            block1.setType(Material.RED_WOOL);
+        else block1.setType(Material.BLUE_WOOL);
+    }
+
+    private int diameterFloor(){
+        return this.spawnDiameter / 2;
+    }
+
+    public boolean isLeaves(Block block){
+        return block.getType().equals(Material.ACACIA_LEAVES)
+                || block.getType().equals(Material.BIRCH_LEAVES)
+                || block.getType().equals(Material.OAK_LEAVES)
+                || block.getType().equals(Material.DARK_OAK_LEAVES)
+                || block.getType().equals(Material.JUNGLE_LEAVES)
+                || block.getType().equals(Material.SPRUCE_LEAVES);
+    }
+
+
+    public boolean isWood(Block block){
+        return block.getType().equals(Material.ACACIA_LOG)
+                || block.getType().equals(Material.BIRCH_LOG)
+                || block.getType().equals(Material.DARK_OAK_LOG)
+                || block.getType().equals(Material.JUNGLE_LOG)
+                || block.getType().equals(Material.OAK_LOG)
+                || block.getType().equals(Material.SPRUCE_LOG);
+    }
+
+    public boolean isTreeElement(Block block){
+        return isWood(block) || isLeaves(block);
+    }
+
+    public boolean isLiquid(Block block){
+        return block.getType().equals(Material.WATER) || block.getType().equals(Material.LAVA);
+    }
 
 
 

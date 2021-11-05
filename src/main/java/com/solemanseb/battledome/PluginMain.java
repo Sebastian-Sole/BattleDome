@@ -14,6 +14,7 @@ public class PluginMain extends JavaPlugin {
     // Fields
     private ArrayList<String> redTeam = new ArrayList<>();
     private ArrayList<String> blueTeam = new ArrayList<>();
+    private ArrayList<String> deadTeam = new ArrayList<>();
     private Logger logger;
     public PluginCommands commands;
 
@@ -149,5 +150,31 @@ public class PluginMain extends JavaPlugin {
 
     public void setCenterBlock(Block centerBlock) {
         this.centerBlock = centerBlock;
+    }
+
+    public ArrayList<String> getDeadTeam() {
+        return deadTeam;
+    }
+
+    public void addDeadTeam(String string){
+        deadTeam.add(string);
+    }
+
+    public int getBlueTeamDeathCount(){
+        int count = 0;
+        for (String dead : getDeadTeam()){
+            if (blueTeam.contains(dead))
+                count++;
+        }
+        return count;
+    }
+
+    public int getRedTeamDeathCount(){
+        int count = 0;
+        for (String dead : getDeadTeam()){
+            if (redTeam.contains(dead))
+                count++;
+        }
+        return count;
     }
 }
