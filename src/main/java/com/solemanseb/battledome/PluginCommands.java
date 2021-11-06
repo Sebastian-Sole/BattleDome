@@ -144,64 +144,7 @@ public class PluginCommands implements CommandExecutor {
 
             setPVPState(false);
 
-            //todo; test this
-
-            BukkitScheduler tenMinTimer = Bukkit.getScheduler();
-            tenMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "10 MINUTES REMAINING");
-                }
-            }, 6000L);
-
-
-            BukkitScheduler fiveMinTimer = Bukkit.getScheduler();
-            fiveMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "5 MINUTES REMAINING");
-                }
-            }, 12000L);
-
-            BukkitScheduler threeMinTimer = Bukkit.getScheduler();
-            threeMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "3 MINUTES REMAINING");
-                }
-            }, 14400L);
-
-            BukkitScheduler oneMinTimer = Bukkit.getScheduler();
-            oneMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "1 MINUTE REMAINING");
-                }
-            }, 16800L);
-
-            BukkitScheduler thirtySecondTimer = Bukkit.getScheduler();
-            thirtySecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "30 SECONDS REMAINING");
-                }
-            }, 17400L);
-
-            BukkitScheduler fifteenSecondTimer = Bukkit.getScheduler();
-            fifteenSecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "15 SECONDS REMAINING");
-                }
-            }, 17700L);
-
-            BukkitScheduler pvpScheduler = Bukkit.getScheduler();
-            pvpScheduler.scheduleSyncDelayedTask(main, new Runnable() {
-                public void run() {
-                    setPVPState(true);
-                    Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "PVP ENABLED! KILL EVERYONE ON THE OPPOSITE TEAM OR DESTROY THEIR OBSIDIAN TO WIN!");
-                }
-            }, 18000L);
+            starTimers();
 
             gameIsRunning = true;
 
@@ -241,6 +184,59 @@ public class PluginCommands implements CommandExecutor {
             }
         }
         return false;
+    }
+
+    private void starTimers() {
+        BukkitScheduler tenMinTimer = Bukkit.getScheduler();
+        tenMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "10 MINUTES REMAINING");
+            }
+        }, 6000L);
+
+
+        BukkitScheduler fiveMinTimer = Bukkit.getScheduler();
+        fiveMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "5 MINUTES REMAINING");
+            }
+        }, 12000L);
+
+        BukkitScheduler threeMinTimer = Bukkit.getScheduler();
+        threeMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "3 MINUTES REMAINING");
+            }
+        }, 14400L);
+
+        BukkitScheduler oneMinTimer = Bukkit.getScheduler();
+        oneMinTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "1 MINUTE REMAINING");
+            }
+        }, 16800L);
+
+        BukkitScheduler thirtySecondTimer = Bukkit.getScheduler();
+        thirtySecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "30 SECONDS REMAINING");
+            }
+        }, 17400L);
+
+        BukkitScheduler fifteenSecondTimer = Bukkit.getScheduler();
+        fifteenSecondTimer.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "15 SECONDS REMAINING");
+            }
+        }, 17700L);
+
+        BukkitScheduler pvpScheduler = Bukkit.getScheduler();
+        pvpScheduler.scheduleSyncDelayedTask(main, new Runnable() {
+            public void run() {
+                setPVPState(true);
+                Bukkit.broadcastMessage(ChatColor.BOLD.toString() + ChatColor.RED + "PVP ENABLED! KILL EVERYONE ON THE OPPOSITE TEAM OR DESTROY THEIR OBSIDIAN TO WIN!");
+            }
+        }, 18000L);
     }
 
     private void setPVPState(boolean bool) {
