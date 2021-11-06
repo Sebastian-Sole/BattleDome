@@ -2,14 +2,18 @@ package com.solemanseb.battledome;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.TabCompleteEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -23,6 +27,41 @@ public class PluginListener implements Listener {
 
     public PluginListener(PluginMain main){
         this.main = main;
+    }
+
+    @EventHandler
+    public void onClick(PlayerInteractEvent e){
+        Player player = e.getPlayer();
+        Block targetBlock = e.getClickedBlock();
+
+        if(player.getEquipment().getItemInMainHand().getType() == Material.WOODEN_HOE){
+            if (main.isOnBlueTeam(player)){
+                if (main.getBlueObsidian() != null){
+                    if (targetBlock.getType() == Material.OBSIDIAN){
+                        if (targetBlock.getY() > 45){
+                            main.setBlueObsidian(targetBlock);
+                            Bukkit.broadcastMessage("BLUE TEAM OBSIDIAN IS SET");
+                        }
+                        else player.sendMessage("Please place your obsidian ABOVE ground. You will be disqualified if it is buried");
+                    }
+                    else player.sendMessage("Cannot set your team's obsidian as a different block");
+                }
+                else player.sendMessage("Your obsidian is already set!");
+            }
+            if (main.isOnRedTeam(player)){
+                if (main.getRedObsidian() != null){
+                    if (targetBlock.getType() == Material.OBSIDIAN){
+                        if (targetBlock.getY() > 45){
+                            main.setRedObsidian(targetBlock);
+                            Bukkit.broadcastMessage("RED TEAM OBSIDIAN IS SET");
+                        }
+                        else player.sendMessage("Please place your obsidian ABOVE ground. You will be disqualified if it is buried");
+                    }
+                    else player.sendMessage("Cannot set your team's obsidian as a different block");
+                }
+                else player.sendMessage("Your obsidian is already set!");
+            }
+        }
     }
 
     @EventHandler
@@ -87,21 +126,6 @@ public class PluginListener implements Listener {
             }
         }
     }
-
-
-    @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event){
-        if (event.getBlock().getType().equals(Material.OBSIDIAN)){
-            String player = event.getPlayer().getName();
-            if (main.getBlueTeam().contains(player)){
-                main.setBlueObsidian(event.getBlock());
-            }
-            else if (main.getRedTeam().contains(player)){
-                main.setRedObsidian(event.getBlock());
-            }
-        }
-    }
-
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event){

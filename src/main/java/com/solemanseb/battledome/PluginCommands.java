@@ -1,10 +1,11 @@
 package com.solemanseb.battledome;
 
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -132,15 +133,9 @@ public class PluginCommands implements CommandExecutor {
                 playerStateOnStart(name);
             }
             Player blueLeader = Bukkit.getPlayer(main.getBlueTeam().get(0));
-            blueLeader.getInventory().addItem(new ItemStack(Material.OBSIDIAN));
-            for (int i = 0; i <=63; i++ ){
-                blueLeader.getInventory().addItem(new ItemStack(Material.CHICKEN_SPAWN_EGG));
-            }
+            giveLeaderItems(blueLeader);
             Player redLeader = Bukkit.getPlayer(main.getRedTeam().get(0));
-            redLeader.getInventory().addItem(new ItemStack(Material.OBSIDIAN));
-            for (int i = 0; i <=63; i++ ){
-                redLeader.getInventory().addItem(new ItemStack(Material.CHICKEN_SPAWN_EGG));
-            }
+            giveLeaderItems(redLeader);
 
             setPVPState(false);
 
@@ -184,6 +179,18 @@ public class PluginCommands implements CommandExecutor {
             }
         }
         return false;
+    }
+
+    private void giveLeaderItems(Player leader) {
+        leader.getInventory().addItem(new ItemStack(Material.OBSIDIAN));
+        for (ItemStack itemStack : leader.getInventory()) {
+            if (itemStack.getType().equals(Material.OBSIDIAN))
+                itemStack.addEnchantment(Enchantment.DEPTH_STRIDER, 2);
+        }
+        for (int i = 0; i <= 63; i++)
+            leader.getInventory().addItem(new ItemStack(Material.CHICKEN_SPAWN_EGG));
+        leader.getInventory().addItem(new ItemStack(Material.WOODEN_HOE));
+        leader.sendMessage("You are the team leader. Place the obsidian in your base, and right click on it with the wooden hoe to set it!");
     }
 
     private void starTimers() {
