@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -177,4 +178,16 @@ public class PluginMain extends JavaPlugin {
         }
         return count;
     }
+
+    public boolean isOnBlueTeam(Player player){
+        return blueTeam.contains(player.getName());
+    }
+
+    public boolean isOnRedTeam(Player player){
+        return redTeam.contains(player.getName());
+    }
+
+
+
+
 }
